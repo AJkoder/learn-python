@@ -1,11 +1,11 @@
-#requests
-import requests
-r=requests.get("https://jsonplaceholder.typicode.com/users/1")
-data=r.json()
-try:
-    print("Email:",data["email"])
-except:
-    "Not found"
-print(r.status_code)
-
-
+#CSV
+import csv
+with open("marks.csv","r") as f:
+    reader=csv.DictReader(f)
+    for row in reader:
+        print(row)
+#json
+import json
+with open("student.json","r") as f:
+    s=json.load(f)
+    print(s["name"],s["course"])
