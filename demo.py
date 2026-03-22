@@ -1,6 +1,11 @@
-#modules
-import mymath
-import math
-print(mymath.Sum(2,3))
-print(math.sqrt(25))
+#requests
+import requests
+r=requests.get("https://jsonplaceholder.typicode.com/users/1")
+data=r.json()
+try:
+    print("Email:",data["email"])
+except:
+    "Not found"
+print(r.status_code)
+
 
