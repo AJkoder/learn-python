@@ -1,11 +1,6 @@
-#CSV
-import csv
-with open("marks.csv","r") as f:
-    reader=csv.DictReader(f)
-    for row in reader:
-        print(row)
-#json
-import json
-with open("student.json","r") as f:
-    s=json.load(f)
-    print(s["name"],s["course"])
+#regex- to find a pattern
+import re
+text = "My email is aj123@gmail.com and my phone is 9876543210"
+phone=re.search(r"\d{10}",text)
+email=re.search("[\w,-]+@[\w.-]",text)
+print(phone.group(),email.group())
