@@ -1,6 +1,13 @@
-#regex- to find a pattern
-import re
-text = "My email is aj123@gmail.com and my phone is 9876543210"
-phone=re.search(r"\d{10}",text)
-email=re.search("[\w,-]+@[\w.-]",text)
-print(phone.group(),email.group())
+#logging
+import logging
+
+logging.basicConfig(filename='app.log', filemode='w', level=logging.INFO)
+#logging.disable(logging.CRITICAL)
+age = 45
+
+if age < 18:
+    print("UNDERAGE")
+    logging.warning("Warning")
+else:
+    print("Pass")
+    logging.info("info")
