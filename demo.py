@@ -1,13 +1,5 @@
-#logging
-import logging
-
-logging.basicConfig(filename='app.log', filemode='w', level=logging.INFO)
-#logging.disable(logging.CRITICAL)
-age = 45
-
-if age < 18:
-    print("UNDERAGE")
-    logging.warning("Warning")
-else:
-    print("Pass")
-    logging.info("info")
+#Creating a virtual environment
+print("hi")
+#Create: python -m venv myenv
+#To activate: source myenv/Scripts/activate(for bash)
+#To deactivate: deactivate
