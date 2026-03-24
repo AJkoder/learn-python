@@ -1,9 +1,20 @@
-#Argparese
-import argparse
-parser=argparse.ArgumentParser()
+#SQLite
+import sqlite3
+conn=sqlite3.connect("students.db")
+cursor=conn.cursor()
+cursor.execute('''
+            create table if not exists students(
+                id integer primary key AUTOINCREMENT,
+                name text,
+                age INT)
+                ''')
+cursor.execute("INSERt INTO STUDENTS(NAME,AGE) VALUES('AJ',20)")
+conn.commit()
+cursor.execute("SELECT * FROM STUDENTS")
+data = cursor.fetchall() 
 
-parser.add_argument('--name')
-parser.add_argument('--age')
-args=parser.parse_args()
-
-print(f"Name is {args.name} and age is {args.age}.")
+print("Record:")
+print(data)
+for row in data:
+    print(row)
+conn.close()
