@@ -1,6 +1,6 @@
-#trying linux commands
-#grep- inside file
-#find- in directories
+#learnt ls -l and chmod commands
+#ls -l
+#chmod 
 HI... I would have some trash but why take
 a
 risk
