@@ -1,13 +1,15 @@
 #trying linux commands
+#grep- inside file
+#find- in directories
 HI... I would have some trash but why take
 a
 risk
-as
+as error
 I
 am
 going
 to 
-push
+push erroR
 it 
 in
 a
