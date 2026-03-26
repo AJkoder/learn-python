@@ -1,15 +1,13 @@
-#learnt ls -l and chmod commands
-#ls -l
-#chmod 
-HI... I would have some trash but why take
+#learnt ps ps aux and top cmd
+HI... I would have  written some trash but why take
 a
 risk
-as error
+as 
 I
 am
 going
 to 
-push erroR
+push 
 it 
 in
 a
