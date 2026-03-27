@@ -1,4 +1,4 @@
-#learnt ps ps aux and top cmd
+#learnt cron and ssh
 HI... I would have  written some trash but why take
 a
 risk
