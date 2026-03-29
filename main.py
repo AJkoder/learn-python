@@ -1,13 +1,12 @@
 import requests
 
-url = "https://httpbin.org/post"
+url = "https://httpbin.org/headers"
 
-data = {
-    "name": "yourname",
-    "goal": "become pro"
+headers = {
+    "User-Agent": "my-custom-script",
+    "Authorization": "Bearer test123"
 }
 
-response = requests.post(url, json=data)
+response = requests.get(url, headers=headers)
 
-print(response.status_code)
 print(response.json())
