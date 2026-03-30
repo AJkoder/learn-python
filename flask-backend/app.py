@@ -1,37 +1,35 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify
 
 app = Flask(__name__)
 
-# Home route
 @app.route("/")
 def home():
-    return "Welcome to my Flask backend!"
+    return jsonify({
+        "status": "ok",
+        "message": "Hello"
+    })
 
-# About route
 @app.route("/about")
 def about():
-    return "This backend is built using Flask."
+    return jsonify({
+        "status": "success",
+        "message": "About Page"
+    })
 
-# API route (JSON response)
-@app.route("/api")
-def api():
-    data = {
+@app.route("/status")
+def status():
+    return jsonify({
+        "status": "success",
+        "message": "Server is running"
+    })
+
+@app.route("/api/info")
+def info():
+    return jsonify({
         "name": "realchamp",
-        "role": "Backend Developer",
-        "phase": "Phase 3"
-    }
-    return jsonify(data)
-
-# Dynamic route (GET parameter)
-@app.route("/greet")
-def greet():
-    name = request.args.get("name")
-
-    if name:
-        return jsonify({"message": f"Hello, {name}!"})
-    else:
-        return jsonify({"message": "Hello, Guest!"})
-
+        "phase": "Phase 3",
+        "goal": "Backend Developer"
+    })
 
 if __name__ == "__main__":
     app.run(debug=True)
