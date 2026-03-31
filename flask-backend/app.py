@@ -1,4 +1,5 @@
 from flask import Flask, jsonify
+from flask import request
 
 app = Flask(__name__)
 
@@ -29,6 +30,15 @@ def info():
         "name": "realchamp",
         "phase": "Phase 3",
         "goal": "Backend Developer"
+    })
+
+@app.route("/api/greet")
+def greet():
+    name = request.args.get("name", "Guest")
+
+    return jsonify({
+        "status": "success",
+        "message": f"Hello, {name}"
     })
 
 if __name__ == "__main__":
