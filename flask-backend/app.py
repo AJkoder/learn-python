@@ -38,6 +38,26 @@ def signup():
 
     return jsonify({"message":"User created successfully"}), 201
 
+@app.route("/login", methods=["POST"])
+def login():
+    data=request.get_json()
+
+    username=data.get("username")
+    password=data.get("password")
+
+    if not username or not password:
+        return jsonify({"error": "Username and password required"}), 400
+    user=User.query.filter_by(username=username).first()
+
+    if not user:
+        return jsonify({"error":"User not found"}),404
+    if user.password!=password:
+        return jsonify({"error": "Invalid password"}), 401
+    return jsonify({
+        "message": "Login successful",
+        "user_id":user.id
+    }), 200
+
 def task_to_dict(task):
     return {
             "id": task.id,
