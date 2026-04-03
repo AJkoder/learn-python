@@ -15,41 +15,43 @@ class Task(db.Model):
 with app.app_context():
     db.create_all()
 
+def task_to_dict(task):
+    return {
+            "id": task.id,
+            "title": task.title,
+            "completed": task.completed
+        }
+
 @app.route("/tasks", methods=["POST"])
 def create_task():
-    data=request.get_json()
+    data = request.get_json()
 
     if data is None:
         return jsonify({"error": "Invalid or missing JSON"}), 400
-    if "title" not in data:
-        return jsonify({"error": "Title is required"}), 400
-    new_task=Task(
-        title=data["title"],
+
+    title = data.get("title")
+
+    if not title or not isinstance(title, str) or title.strip() == "":
+        return jsonify({"error": "Title must be a non-empty string"}), 400
+
+    new_task = Task(
+        title=title,
         completed=False
     )
+
     db.session.add(new_task)
     db.session.commit()
 
     return jsonify({
-        "message":"Task created",
-        "task":{
-            "id": new_task.id,
-            "title": new_task.title,
-            "completed": new_task.completed
-        }
-    }),201
+        "message": "Task created",
+        "task": task_to_dict(new_task)
+    }), 201
 
 @app.route("/tasks",methods=["GET"])
 def get_tasks():
     tasks=Task.query.all()
 
-    result=[]
-    for task in tasks:
-        result.append({
-            "id":task.id,
-            "title":task.title,
-            "completed": task.completed
-        })   
+    result=[task_to_dict(task) for task in tasks]   
     return jsonify({"tasks": result}),200
 
 @app.route("/tasks/<int:task_id>", methods=["GET"])
@@ -59,11 +61,7 @@ def get_task(task_id):
     if not task:
         return jsonify({"error": "Task not found"}), 404
 
-    return jsonify({
-        "id": task.id,
-        "title": task.title,
-        "completed": task.completed
-    }), 200
+    return jsonify(task_to_dict(task)), 200
 
 @app.route("/tasks/<int:task_id>", methods=["PUT"])
 def update_task(task_id):
@@ -84,11 +82,7 @@ def update_task(task_id):
 
     return jsonify({
         "message": "task updated",
-        "task": {
-            "id":task.id,
-            "title":task.title,
-            "completed": task.completed
-        }
+        "task": task_to_dict(task)
     }), 200
 
 @app.route("/tasks/<int:task_id>", methods=["DELETE"])
