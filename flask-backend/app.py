@@ -65,5 +65,42 @@ def get_task(task_id):
         "completed": task.completed
     }), 200
 
+@app.route("/tasks/<int:task_id>", methods=["PUT"])
+def update_task(task_id):
+    data=request.get_json()
+
+    if data is None:
+        return jsonify({"error":"Invalid or missing json"}), 400
+    task=Task.query.get(task_id)
+
+    if not task:
+        return jsonify({"error":"Task not found"}), 404
+    
+    if "title" in data:
+        task.title=data["title"]
+    if "completed" in data:
+        task.completed=data["completed"]
+    db.session.commit()
+
+    return jsonify({
+        "message": "task updated",
+        "task": {
+            "id":task.id,
+            "title":task.title,
+            "completed": task.completed
+        }
+    }), 200
+
+@app.route("/tasks/<int:task_id>", methods=["DELETE"])
+def delete_task(task_id):
+    task=Task.query.get(task_id)
+
+    if not task:
+        return jsonify({"error":"Task not found"}), 404
+    db.session.delete(task)
+    db.session.commit()
+
+    return jsonify({"message": "Task deleted"}), 200
+
 if __name__ == "__main__":
     app.run(debug=True)
