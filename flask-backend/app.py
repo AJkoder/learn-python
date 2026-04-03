@@ -11,9 +11,32 @@ class Task(db.Model):
     id=db.Column(db.Integer, primary_key=True)
     title=db.Column(db.String(200), nullable=False)
     completed=db.Column(db.Boolean, default=False)
+class User(db.Model):
+    id=db.Column(db.Integer, primary_key=True)
+    username=db.Column(db.String(100), unique=True, nullable=False)
+    password=db.Column(db.String(200), nullable=False)
 
 with app.app_context():
     db.create_all()
+
+@app.route("/signup", methods=["POST"])
+def signup():
+    data=request.get_json()
+
+    username=data.get("username")
+    password=data.get("password")
+
+    if not username or not password:
+        return jsonify({"error":"Username and password required"}), 400
+    
+    existing_user=User.query.filter_by(username=username).first()
+    if existing_user:
+        return jsonify({"error":"User already exists"}), 400
+    new_user=User(username=username,password=password)
+    db.session.add(new_user)
+    db.session.commit()
+
+    return jsonify({"message":"User created successfully"}), 201
 
 def task_to_dict(task):
     return {
@@ -75,9 +98,19 @@ def update_task(task_id):
         return jsonify({"error":"Task not found"}), 404
     
     if "title" in data:
-        task.title=data["title"]
+        title = data["title"]
+
+        if not isinstance(title, str) or title.strip() == "":
+            return jsonify({"error": "Title must be a non-empty string"}), 400
+
+        task.title = title
     if "completed" in data:
-        task.completed=data["completed"]
+        completed = data["completed"]
+
+        if not isinstance(completed, bool):
+            return jsonify({"error": "Completed must be true or false"}), 400
+
+        task.completed = completed
     db.session.commit()
 
     return jsonify({
