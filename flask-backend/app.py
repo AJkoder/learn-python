@@ -13,7 +13,7 @@ class Task(db.Model):
     title=db.Column(db.String(200), nullable=False)
     completed=db.Column(db.Boolean, default=False)
 
-    user_id=db.Column(db.Integer, db.ForeignKey('user.id') nullable=False)
+    user_id=db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 class User(db.Model):
     id=db.Column(db.Integer, primary_key=True)
     username=db.Column(db.String(100), unique=True, nullable=False)
@@ -98,29 +98,15 @@ def create_task():
         "task": task_to_dict(new_task)
     }), 201
 
-@app.route("/tasks",methods=["GET"])
+@app.route("/tasks", methods=["GET"])
 def get_tasks():
     if not current_user_id:
         return jsonify({"error": "Login required"}), 401
 
     tasks = Task.query.filter_by(user_id=current_user_id).all()
 
-    if not user_id:
-        return jsonify({"error": "user_id is required"}), 400
-
-    tasks = Task.query.filter_by(user_id=user_id).all()
-
-    result=[task_to_dict(task) for task in tasks]   
-    return jsonify({"tasks": result}),200
-
-@app.route("/tasks/<int:task_id>", methods=["GET"])
-def get_task(task_id):
-    task = Task.query.get(task_id)
-
-    if not task:
-        return jsonify({"error": "Task not found"}), 404
-
-    return jsonify(task_to_dict(task)), 200
+    result = [task_to_dict(task) for task in tasks]
+    return jsonify({"tasks": result}), 200
 
 @app.route("/tasks/<int:task_id>", methods=["PUT"])
 def update_task(task_id):
@@ -132,6 +118,9 @@ def update_task(task_id):
 
     if not task:
         return jsonify({"error":"Task not found"}), 404
+    
+    if task.user_id != current_user_id:
+        return jsonify({"error": "Unauthorized"}), 403
     
     if "title" in data:
         title = data["title"]
@@ -160,6 +149,9 @@ def delete_task(task_id):
 
     if not task:
         return jsonify({"error":"Task not found"}), 404
+    
+    if task.user_id != current_user_id:
+        return jsonify({"error": "Unauthorized"}), 403
     db.session.delete(task)
     db.session.commit()
 
