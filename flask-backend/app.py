@@ -1,68 +1,69 @@
 from flask import Flask, request, jsonify
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
-tasks = []
+app.config['SQLALCHEMY_DATABASE_URI']='sqlite:///tasks.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS']=False
+
+db=SQLAlchemy(app)
+
+class Task(db.Model):
+    id=db.Column(db.Integer, primary_key=True)
+    title=db.Column(db.String(200), nullable=False)
+    completed=db.Column(db.Boolean, default=False)
+
+with app.app_context():
+    db.create_all()
 
 @app.route("/tasks", methods=["POST"])
 def create_task():
-    data = request.get_json()
+    data=request.get_json()
 
     if data is None:
         return jsonify({"error": "Invalid or missing JSON"}), 400
-
-    if not data:
-        return jsonify({"error": "Empty JSON provided"}), 400
-
     if "title" not in data:
         return jsonify({"error": "Title is required"}), 400
-
-    task = {
-        "id": len(tasks) + 1,
-        "title": data["title"],
-        "completed": False
-    }
-
-    tasks.append(task)
+    new_task=Task(
+        title=data["title"],
+        completed=False
+    )
+    db.session.add(new_task)
+    db.session.commit()
 
     return jsonify({
-        "message": "Task created",
-        "task": task
-    }), 201
+        "message":"Task created",
+        "task":{
+            "id": new_task.id,
+            "title": new_task.title,
+            "completed": new_task.completed
+        }
+    }),201
+
+@app.route("/tasks",methods=["GET"])
+def get_tasks():
+    tasks=Task.query.all()
+
+    result=[]
+    for task in tasks:
+        result.append({
+            "id":task.id,
+            "title":task.title,
+            "completed": task.completed
+        })   
+    return jsonify({"tasks": result}),200
 
 @app.route("/tasks/<int:task_id>", methods=["GET"])
 def get_task(task_id):
-    for task in tasks:
-        if task["id"]==task_id:
-            return jsonify(task),200
-    return jsonify({"error":"task not found"}),404
+    task = Task.query.get(task_id)
 
-@app.route("/tasks/<int:task_id>",methods=["PUT"])
-def update_task(task_id):
-    data=request.get_json()
-    if data is None:
-        return jsonify({"error":"Invalid or missing JSON"}),400
-    for task in tasks:
-        if task["id"]==task_id:
-            if "title" in data:
-                task["title"]=data["title"]
-            if "completed" in data:
-                task["completed"]=data["completed"]
-            return jsonify({
-                "message": "Task Updated",
-                "task": task
-            }), 200
-    return jsonify({"error":"Task not found"}), 404
+    if not task:
+        return jsonify({"error": "Task not found"}), 404
 
-@app.route("/tasks/<int:task_id>", methods=["DELETE"])
-def delete_task(task_id):
-    for task in tasks:
-        if task["id"]==task_id:
-            tasks.remove(task)
-            return jsonify({
-                "message": "task deleted"
-            }), 200 
-    return jsonify({"error":"Task not found"}),404     
+    return jsonify({
+        "id": task.id,
+        "title": task.title,
+        "completed": task.completed
+    }), 200
 
- 
 if __name__ == "__main__":
     app.run(debug=True)
