@@ -6,11 +6,14 @@ app.config['SQLALCHEMY_DATABASE_URI']='sqlite:///tasks.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS']=False
 
 db=SQLAlchemy(app)
+current_user_id=None
 
 class Task(db.Model):
     id=db.Column(db.Integer, primary_key=True)
     title=db.Column(db.String(200), nullable=False)
     completed=db.Column(db.Boolean, default=False)
+
+    user_id=db.Column(db.Integer, db.ForeignKey('user.id') nullable=False)
 class User(db.Model):
     id=db.Column(db.Integer, primary_key=True)
     username=db.Column(db.String(100), unique=True, nullable=False)
@@ -40,6 +43,7 @@ def signup():
 
 @app.route("/login", methods=["POST"])
 def login():
+    global current_user_id
     data=request.get_json()
 
     username=data.get("username")
@@ -53,10 +57,12 @@ def login():
         return jsonify({"error":"User not found"}),404
     if user.password!=password:
         return jsonify({"error": "Invalid password"}), 401
+    current_user_id=user.id
     return jsonify({
         "message": "Login successful",
-        "user_id":user.id
     }), 200
+
+
 
 def task_to_dict(task):
     return {
@@ -68,9 +74,10 @@ def task_to_dict(task):
 @app.route("/tasks", methods=["POST"])
 def create_task():
     data = request.get_json()
-
     if data is None:
         return jsonify({"error": "Invalid or missing JSON"}), 400
+    if not current_user_id:
+        return jsonify({"error": "Login required"}), 401
 
     title = data.get("title")
 
@@ -79,7 +86,8 @@ def create_task():
 
     new_task = Task(
         title=title,
-        completed=False
+        completed=False,
+        user_id=current_user_id
     )
 
     db.session.add(new_task)
@@ -92,7 +100,15 @@ def create_task():
 
 @app.route("/tasks",methods=["GET"])
 def get_tasks():
-    tasks=Task.query.all()
+    if not current_user_id:
+        return jsonify({"error": "Login required"}), 401
+
+    tasks = Task.query.filter_by(user_id=current_user_id).all()
+
+    if not user_id:
+        return jsonify({"error": "user_id is required"}), 400
+
+    tasks = Task.query.filter_by(user_id=user_id).all()
 
     result=[task_to_dict(task) for task in tasks]   
     return jsonify({"tasks": result}),200
