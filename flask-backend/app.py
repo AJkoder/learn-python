@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash, check_password_hash    
 import jwt
 import datetime
 
@@ -57,7 +58,11 @@ def signup():
     if User.query.filter_by(username=username).first():
         return jsonify({"error": "User already exists"}), 400
 
-    new_user = User(username=username, password=password)
+    hashed_password = generate_password_hash(password)
+    new_user = User(
+        username=username,
+        password=hashed_password
+    )    
     db.session.add(new_user)
     db.session.commit()
 
@@ -79,7 +84,7 @@ def login():
     if not user:
         return jsonify({"error": "User not found"}), 404
 
-    if user.password != password:
+    if not check_password_hash(user.password, password):
         return jsonify({"error": "Invalid password"}), 401
 
     token = jwt.encode({
