@@ -3,11 +3,14 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash    
 import jwt
 import datetime
+import time
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tasks.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = "mysecretkey"
+
+login_attempts = {}
 
 db = SQLAlchemy(app)
 
@@ -76,6 +79,13 @@ def login():
     username = data.get("username")
     password = data.get("password")
 
+    attempt= login_attempts.get(username)
+    if attempt:
+        if attempt["count"]>=5:
+            if time.time()<attempt["blocked_until"]:
+                return jsonify({"error": "Too many login attempts. Try again later."}), 429
+                   
+
     if not username or not password:
         return jsonify({"error": "Username and password required"}), 400
 
@@ -85,18 +95,24 @@ def login():
         return jsonify({"error": "User not found"}), 404
 
     if not check_password_hash(user.password, password):
-        return jsonify({"error": "Invalid password"}), 401
+        attempt = login_attempts.get(username, {"count": 0, "blocked_until": 0})
+        attempt["count"] += 1
 
+        if attempt["count"] >= 5:
+            attempt["blocked_until"] = time.time() + 300  # Block for 5 minutes
+        login_attempts[username] = attempt
+        return jsonify({"error": "Incorrect password"}), 401
+    
     token = jwt.encode({
         "user_id": user.id,
         "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1)
     }, app.config['SECRET_KEY'], algorithm="HS256")
 
+    login_attempts.pop(username, None)  # Reset login attempts on successful login
     return jsonify({
-        "message": "Login successful",
-        "token": token
+            "message": "Login successful",
+            "token": token
     }), 200
-
 
 # ---------------- UTILITY ----------------
 def task_to_dict(task):
