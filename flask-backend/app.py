@@ -4,6 +4,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 import datetime
 import time
+import bleach
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tasks.db'
@@ -135,7 +136,7 @@ def create_task():
     if not user_id:
         return jsonify({"error": "Login required"}), 401
 
-    title = data.get("title")
+    title = bleach.clean(data.get("title"))
 
     if not title or not isinstance(title, str) or title.strip() == "":
         return jsonify({"error": "Invalid title"}), 400
@@ -177,7 +178,7 @@ def update_task(task_id):
     data = request.get_json()
 
     if "title" in data:
-        title = data["title"]
+        title = bleach.clean(data["title"])
         if not isinstance(title, str) or title.strip() == "":
             return jsonify({"error": "Invalid title"}), 400
         task.title = title
