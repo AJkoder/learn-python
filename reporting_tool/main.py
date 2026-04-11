@@ -2,6 +2,7 @@ import requests
 import csv
 
 username = input("Enter username: ")
+GITHUB_TOKEN = "ghp_abcdefghijklmnopqrstuvwxyz123456789012"
 
 url = f"https://api.github.com/users/{username}"
 
